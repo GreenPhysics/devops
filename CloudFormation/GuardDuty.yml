@@ -1,0 +1,50 @@
+---
+Description: >-
+  Guardduty with SNS email alerts GreenPhysics!
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  SecuritySnstopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: security-alerts
+      TopicName: security-alerts
+      Subscription:
+        - Endpoint: greenphysicscorp@gmail.com
+          Protocol: email
+  GuardDuty:
+    Type: AWS::GuardDuty::Detector
+    Properties:
+      Enable: true
+      FindingPublishingFrequency: FIFTEEN_MINUTES
+
+  GuardDutyEventRule:
+    Type: AWS::Events::Rule
+    DependsOn:
+      - SecuritySnstopic
+    Properties:
+      EventPattern:
+        detail-type:
+          - GuardDuty Finding
+        detail:
+          source:
+            - aws.guardduty
+          detail-type:
+            - GuardDuty Finding
+      State: ENABLED
+      Targets:
+        - Arn: !Ref SecuritySnstopic
+          Id: SnsSecurityTopic
+
+  EventTopicPolicy:
+    Type: 'AWS::SNS::TopicPolicy'
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: 'sns:Publish'
+            Resource: '*'
+      Topics:
+        - !Ref SecuritySnstopic
+
