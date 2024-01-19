@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  This template is used to create your fedora instance 
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable access to the instance
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: classy
+    ConstraintDescription: Must be the name of an existing EC2 KeyPair.
+  VPC:
+    Type: 'AWS::EC2::VPC::Id'
+    Default: vpc-0f50ce6a
+  SubnetAId:
+    Type: 'AWS::EC2::Subnet::Id'
+    Default: subnet-0fc15678
+  ImageId:
+    Description: The Amazon Machine Image ("AMI") used to start the EC2 Instance.
+    Type: String
+    Default: ami-0509efde31cedbfdd
+  ServerSG:
+    Type: String
+    Default: sg-086bdc3a47f26fd62
+  ServerInstanceProfileName:
+    Type: String
+    Default: EC2-INSTANCE-ROLE
+Resources:
+  WebServerInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            DeleteOnTermination: true
+            VolumeType: gp2
+            VolumeSize: 100
+      ImageId: !Ref ImageId
+      InstanceType: t3.xlarge
+      IamInstanceProfile: !Ref ServerInstanceProfileName
+      KeyName: !Ref KeyName
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          DeleteOnTermination: true
+          SubnetId: !Ref SubnetAId
+          # This defines the SG that we will place on the ENI, We will create the SG after the instance resource definition
+          GroupSet: 
+          - !Ref ServerSG
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 10500b7e-e711-45fd-b299-1ad3a96cea63
+Outputs: {}
+Metadata:
+  'AWS::CloudFormation::Designer':
+    10500b7e-e711-45fd-b299-1ad3a96cea63:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 60
+        'y': 90
+      z: 1
+      embeds: []
+    18a6fe4d-f426-466c-a80d-04f947569b3f:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 180
+        'y': 90
+      z: 1
+      embeds: []
+      ismemberof:
+        - 10500b7e-e711-45fd-b299-1ad3a96cea63
